@@ -3,31 +3,39 @@ Author: Buck Woody, Microsoft
 Last Updated: 01/16/2017
 
 1. Using SQL Server Data from R with an ODBC-Like call
-https://msdn.microsoft.com/en-us/library/mt629161.aspx 
- 
+https://msdn.microsoft.com/en-us/library/mt629161.aspx
+
 
 2. Using SQL Server Data with R in SQL Server
 
-Prepare your system: 
+Prepare your system:
 
-Ensure the AdventureWorks 2012 OLTP database is installed: 	https://msftdbprodsamples.codeplex.com/releases/view/55330 
+Ensure the AdventureWorks 2012 OLTP database is installed: 	https://msftdbprodsamples.codeplex.com/releases/view/55330
 
 Download the Data File, put it here:
-	C:\Program Files\Microsoft SQL Server\MSSQL13.MSSQLSERVER\MSSQL\DATA 
+	C:\Program Files\Microsoft SQL Server\MSSQL13.MSSQLSERVER\MSSQL\DATA
 
 Now "attach" that database file in SQL Server. Ask the instructor if you have not done this before.
+
+USE master;
+GO
+CREATE DATABASE AdventureWorks2012
+    ON (FILENAME = 'C:\Program Files\Microsoft SQL Server\MSSQL13.MSSQLSERVER\MSSQL\DATA\AdventureWorks2012_Data.mdf')
+    FOR ATTACH;
+GO
+
 */
 
 /* Check to see if R is Installed and available */
-EXEC sp_execute_external_script  
-@language =N'R',  
--- SQL Part    
+EXEC sp_execute_external_script
+@language =N'R',
+-- SQL Part
 @input_data_1 =N'SELECT 1 as Installed'  ,
 -- R Part
 @script=N'OutputDataSet<-InputDataSet'
 -- Return R Results to SQL
-WITH RESULT SETS 
-(([Installed] int not null));  
+WITH RESULT SETS
+(([Installed] int not null));
 GO
 
 -- If 0 or error, install R, then enable
@@ -39,13 +47,13 @@ GO
 -- NOTE: LaunchPad Windows Service must be running
 
 /* Simple Example using internal R Data
-https://msdn.microsoft.com/en-us/library/mt591996.aspx 
+https://msdn.microsoft.com/en-us/library/mt591996.aspx
  */
 EXEC sp_execute_external_script
   @language = N'R'
 , @input_data_1 = N'SELECT 1 as Col'
 , @script = N'OutputDataSet <- subset(iris, select=-Species);'
-WITH RESULT SETS 
+WITH RESULT SETS
 	(("Sepal.Length" float not null
 	, "Sepal.Width" float not null
 	, "Petal.Length" float not null
@@ -61,10 +69,10 @@ EXEC sp_help 'Sales.SalesOrderDetail'
 EXEC sp_help 'Sales.SalesOrderHeader'
 EXEC sp_help 'Person.Address'
 EXEC sp_help 'Person.StateProvince'
-EXEC sp_help ' Production.Product'
+EXEC sp_help 'Production.Product'
 
 -- Get the Data for where goods are shipped to
-SELECT 
+SELECT
   PP.Name
 , SOD.LineTotal
 , PA.City
@@ -80,7 +88,7 @@ FROM Sales.SalesOrderDetail SOD
 			INNER JOIN Production.Product AS PP ON SOD.ProductID = PP.ProductID
 
 -- Get Amounts
-SELECT 
+SELECT
   SUM(SOD.LineTotal)
 FROM Sales.SalesOrderDetail SOD
  -- Get header
@@ -94,9 +102,9 @@ FROM Sales.SalesOrderDetail SOD
 WHERE PSP.Name = 'Florida';
 GO
 
-/* 
+/*
 Now - is the purchase level statistically different? This is harder to do in T-SQL:
-	(mean of the first set - mean of the second set)/square root((square(standard deviation of the first set/total number of values in the first set)) + (square(standard deviation of the second set/total number of values in the second set))) 
+	(mean of the first set - mean of the second set)/square root((square(standard deviation of the first set/total number of values in the first set)) + (square(standard deviation of the second set/total number of values in the second set)))
 	http://www.thinkcalculator.com/statistics/t-test-formula.jpg
 */
 
@@ -106,7 +114,7 @@ EXEC sp_execute_external_script
   @language = N'R'
 
 -- SQL Statement
-, @input_data_1 = N'SELECT 
+, @input_data_1 = N'SELECT
  PSP.Name, SOD.LineTotal
 FROM Sales.SalesOrderDetail SOD
 -- Get header
@@ -128,72 +136,72 @@ d <- c$LineTotal
 print(t.test(b,d))'
 
 /*
-Package considerations: 
+Package considerations:
 */
 
 -- This is your true R path for SQL Server
 EXEC sp_execute_external_script  @language =N'R'
-,  
-	@script=N'OutputDataSet <- data.frame(path = .libPaths())',    
-	@input_data_1 =N'select 1 as ReturnVal'  
-WITH RESULT SETS (([path] varchar(250) not null));  
+,
+	@script=N'OutputDataSet <- data.frame(path = .libPaths())',
+	@input_data_1 =N'select 1 as ReturnVal'
+WITH RESULT SETS (([path] varchar(250) not null));
 GO
 
 -- This is your true user for SQL Server R Services
 EXEC sp_execute_external_script  @language =N'R'
-,  
-	@script=N'OutputDataSet <- data.frame(fieldname = names(Sys.info()), value = Sys.info())',    
-	@input_data_1 =N'select 1 as ReturnVal'  
-WITH RESULT SETS (([fieldname] varchar(250) , [value] varchar(250)));  
+,
+	@script=N'OutputDataSet <- data.frame(fieldname = names(Sys.info()), value = Sys.info())',
+	@input_data_1 =N'select 1 as ReturnVal'
+WITH RESULT SETS (([fieldname] varchar(250) , [value] varchar(250)));
 GO
 
 /* Performance Tuning */
--- Examine SQL Server Satellite processes in Extended Events: 
+-- Examine SQL Server Satellite processes in Extended Events:
 SELECT o.name
-, o.description  
-FROM sys.dm_xe_objects o  
-	INNER JOIN sys.dm_xe_packages p  
-		ON o.package_guid = p.guid  
-WHERE o.object_type = 'event'  
-	AND p.name = 'SQLSatellite'  
-ORDER BY o.name;   
+, o.description
+FROM sys.dm_xe_objects o
+	INNER JOIN sys.dm_xe_packages p
+		ON o.package_guid = p.guid
+WHERE o.object_type = 'event'
+	AND p.name = 'SQLSatellite'
+ORDER BY o.name;
 GO
 
 -- Check the DMV's you have for performance:
-SELECT * 
-FROM sys.dm_os_performance_counters 
-WHERE object_name LIKE '%External%'; 
+SELECT *
+FROM sys.dm_os_performance_counters
+WHERE object_name LIKE '%External%';
 GO
 
--- Control performance using Resource Governor - let's look at the usage first: 
-SELECT * FROM 
-sys.resource_governor_resource_pools 
-WHERE name = 'default' 
+-- Control performance using Resource Governor - let's look at the usage first:
+SELECT * FROM
+sys.resource_governor_resource_pools
+WHERE name = 'default'
 
-SELECT * 
-FROM sys.resource_governor_external_resource_pools 
-WHERE name = 'default'  
+SELECT *
+FROM sys.resource_governor_external_resource_pools
+WHERE name = 'default'
 
 -- Now we'll balance the memory for internal/external pools
-ALTER RESOURCE POOL "default" 
-WITH (max_memory_percent = 60);  
+ALTER RESOURCE POOL "default"
+WITH (max_memory_percent = 60);
 GO
 
-ALTER EXTERNAL RESOURCE POOL "default" 
-WITH (max_memory_percent = 40);  
+ALTER EXTERNAL RESOURCE POOL "default"
+WITH (max_memory_percent = 40);
 GO
 
-ALTER RESOURCE GOVERNOR reconfigure;  
+ALTER RESOURCE GOVERNOR reconfigure;
 GO
 
 -- This affects all connections - better to create a classifier function:
--- https://msdn.microsoft.com/en-us/library/mt703706.aspx 
+-- https://msdn.microsoft.com/en-us/library/mt703706.aspx
 
-/* Security 
-Check the User Account Pool by looking in Windows for the MSSQLSERVER0n accounts, also SQLRUserGroup in Windows. Follow along with the instructor. 
+/* Security
+Check the User Account Pool by looking in Windows for the MSSQLSERVER0n accounts, also SQLRUserGroup in Windows. Follow along with the instructor.
 These are used for impersonation in R
 TDE Not supported at this time for R data
-More on security configuration: https://msdn.microsoft.com/en-us/library/mt590869.aspx 
+More on security configuration: https://msdn.microsoft.com/en-us/library/mt590869.aspx
 */
 
 
@@ -201,23 +209,23 @@ More on security configuration: https://msdn.microsoft.com/en-us/library/mt59086
 
 -- This one is installed
 EXEC sp_execute_external_script  @language =N'R'
-,  
-	@script=N'OutputDataSet <- data.frame(path = require(dplyr))',    
-	@input_data_1 =N'select 1 as ReturnVal'  
-WITH RESULT SETS (([path] varchar(250) not null));  
+,
+	@script=N'OutputDataSet <- data.frame(path = require(dplyr))',
+	@input_data_1 =N'select 1 as ReturnVal'
+WITH RESULT SETS (([path] varchar(250) not null));
 GO
 
 -- This one is not
 EXEC sp_execute_external_script  @language =N'R'
-,  
-	@script=N'OutputDataSet <- data.frame(path = require(lubridate))',    
-	@input_data_1 =N'select 1 as ReturnVal'  
-WITH RESULT SETS (([path] varchar(250) not null));  
+,
+	@script=N'OutputDataSet <- data.frame(path = require(lubridate))',
+	@input_data_1 =N'select 1 as ReturnVal'
+WITH RESULT SETS (([path] varchar(250) not null));
 GO
 
--- Packages must use the R environment from here: C:\Program Files\Microsoft SQL Server\MSSQL13.MSSQLSERVER\R_SERVICES\bin> 
+-- Packages must use the R environment from here: C:\Program Files\Microsoft SQL Server\MSSQL13.MSSQLSERVER\R_SERVICES\bin>
 
-/* 
+/*
 # An example of this in R:
 Sys.getenv()
 installed.packages
@@ -225,7 +233,7 @@ installed.packages
 # Install a package
 install.packages("xgboost")
 
-library(xgboost) 
+library(xgboost)
 
 data(agaricus.train, package='xgboost')
 data(agaricus.test, package='xgboost')
@@ -237,17 +245,17 @@ bst <- xgboost(data = train$data, label = train$label, max.depth = 2, eta = 1, n
 pred <- predict(bst, test$data)
 pred
 
-https://msdn.microsoft.com/en-us/library/mt591989.aspx 
+https://msdn.microsoft.com/en-us/library/mt591989.aspx
 
 */
 
 /* And now to create a predictive model in SQL Server and R using Machine Learning:
-ML Lab Setup: 
-Next, Copy the file telcoedw.bak from the \Resources directory to the following directory of a default SQL Server 2016 Instance: 
+ML Lab Setup:
+Next, Copy the file telcoedw.bak from the \Resources directory to the following directory of a default SQL Server 2016 Instance:
 C:\Program Files\Microsoft SQL Server\MSSQL13\MSSQL\Backup
 Restore that database - directions below
 
-Tables: 
+Tables:
 edw_cdr - Base Call Detail Records (CDR)
 
 edw_cdr_train - Training data
@@ -275,18 +283,18 @@ Stored Procedures:
 */
 
 USE [master]
-RESTORE DATABASE [telcoedw] 
+RESTORE DATABASE [telcoedw]
 FROM  DISK = N'C:\Program Files\Microsoft SQL Server\MSSQL13.MSSQLSERVER\MSSQL\Backup\telcoedw.bak' WITH  FILE = 1
 ,  MOVE N'telcoedw2' TO N'C:\Program Files\Microsoft SQL Server\MSSQL13.MSSQLSERVER\MSSQL\DATA\telcoedw.mdf'
 ,  MOVE N'telcoedw2_log' TO N'C:\Program Files\Microsoft SQL Server\MSSQL13.MSSQLSERVER\MSSQL\DATA\telcoedw_log.ldf'
 ,  NOUNLOAD,  REPLACE,  STATS = 5
 GO
 
-USE [telcoedw] 
+USE [telcoedw]
 GO
 
 -- Examine the data - can you explore further? What else can you learn?
-SELECT * 
+SELECT *
 FROM edw_cdr;
 GO
 
@@ -297,7 +305,7 @@ EXEC generate_cdr_rx_DForest;
 GO
 
 /* Show the serialized model */
-SELECT * 
+SELECT *
 FROM cdr_rx_models;
 GO
 
@@ -320,15 +328,15 @@ INSERT INTO edw_cdr_test_pred
 EXEC predict_cdr_churn_rx_forest 'rxDForest';
 GO
 
-SELECT * 
-FROM edw_cdr_test_pred; 
+SELECT *
+FROM edw_cdr_test_pred;
 GO
 
 /* Step 3 - Evaluate the model
-This uses test data to evaluate the performance of the model. 
-Want to know more? 
-http://docs.statwing.com/the-confusion-matrix-and-the-precision-recall-tradeoff/ 
-https://en.wikipedia.org/wiki/F1_score 
+This uses test data to evaluate the performance of the model.
+Want to know more?
+http://docs.statwing.com/the-confusion-matrix-and-the-precision-recall-tradeoff/
+https://en.wikipedia.org/wiki/F1_score
 */
 -- EXEC sp_helptext 'model_evaluate';
 EXEC model_evaluate;
@@ -343,7 +351,7 @@ insert into edw_cdr_test_pred
 exec [dbo].[predict_cdr_churn_rx_boost] 'rxBTrees';
 GO
 
-SELECT * 
+SELECT *
 FROM edw_cdr_test_pred
 ORDER BY prediction DESC;
 GO
@@ -360,47 +368,47 @@ insert into edw_cdr_test_pred
 exec predict_cdr_churn_xgboost 'rxBTrees';
 go
 
-select * 
-from edw_cdr_test_pred; 
+select *
+from edw_cdr_test_pred;
 GO
 
 exec model_evaluate;
 GO
 
-/* 
-If you would like to try an ODBC call to a Database, open an R client (not SQL Server) and run this code - change the names and passwords. 
+/*
+If you would like to try an ODBC call to a Database, open an R client (not SQL Server) and run this code - change the names and passwords.
 In an R Client, try the following code:
 
-library(RevoScaleR)  
-  
-# Define the connection string  
-# This walkthrough requires SQL authentication  
-connStr <- "Driver=SQL Server;Server=<SQL_instance_name>;Database=<database_name>;Uid=<user_name>;Pwd=<user password>"  
-  
-# Set ComputeContext.   
-sqlShareDir <- paste("C:\\AllShare\\",Sys.getenv("USERNAME"),sep="")  
-sqlWait <- TRUE  
-sqlConsoleOutput <- FALSE  
-cc <- RxInSqlServer(connectionString = connStr, shareDir = sqlShareDir,   
-                    wait = sqlWait, consoleOutput = sqlConsoleOutput)  
-rxSetComputeContext(cc)  
-  
-#Define a DataSource   
-sampleDataQuery <- "select top 1000 tipped, fare_amount, passenger_count,trip_time_in_secs,trip_distance,   
-    pickup_datetime, dropoff_datetime, pickup_longitude, pickup_latitude, dropoff_longitude,    
-    dropoff_latitude from nyctaxi_sample"  
-  
-inDataSource <- RxSqlServerData(sqlQuery = sampleDataQuery, connectionString = connStr,   
-                                colClasses = c(pickup_longitude = "numeric", pickup_latitude = "numeric",   
-                                               dropoff_longitude = "numeric", dropoff_latitude = "numeric"),  
-                                rowsPerRead=500)  
+library(RevoScaleR)
+
+# Define the connection string
+# This walkthrough requires SQL authentication
+connStr <- "Driver=SQL Server;Server=<SQL_instance_name>;Database=<database_name>;Uid=<user_name>;Pwd=<user password>"
+
+# Set ComputeContext.
+sqlShareDir <- paste("C:\\AllShare\\",Sys.getenv("USERNAME"),sep="")
+sqlWait <- TRUE
+sqlConsoleOutput <- FALSE
+cc <- RxInSqlServer(connectionString = connStr, shareDir = sqlShareDir,
+                    wait = sqlWait, consoleOutput = sqlConsoleOutput)
+rxSetComputeContext(cc)
+
+#Define a DataSource
+sampleDataQuery <- "select top 1000 tipped, fare_amount, passenger_count,trip_time_in_secs,trip_distance,
+    pickup_datetime, dropoff_datetime, pickup_longitude, pickup_latitude, dropoff_longitude,
+    dropoff_latitude from nyctaxi_sample"
+
+inDataSource <- RxSqlServerData(sqlQuery = sampleDataQuery, connectionString = connStr,
+                                colClasses = c(pickup_longitude = "numeric", pickup_latitude = "numeric",
+                                               dropoff_longitude = "numeric", dropoff_latitude = "numeric"),
+                                rowsPerRead=500)
 
 # Inspect the data
-rxGetVarInfo(data = inDataSource)   
+rxGetVarInfo(data = inDataSource)
 
 # Summarize fare_amount based on passenger_count
-start.time <- proc.time()  
-rxSummary(~fare_amount:F(passenger_count), data = inDataSource)  
-used.time <- proc.time() - start.time  
-print(paste("It takes CPU Time=", round(used.time[1]+used.time[2],2)," seconds, Elapsed Time=", round(used.time[3],2), " seconds to summarize the inDataSource.", sep="")) 
+start.time <- proc.time()
+rxSummary(~fare_amount:F(passenger_count), data = inDataSource)
+used.time <- proc.time() - start.time
+print(paste("It takes CPU Time=", round(used.time[1]+used.time[2],2)," seconds, Elapsed Time=", round(used.time[3],2), " seconds to summarize the inDataSource.", sep=""))
 */

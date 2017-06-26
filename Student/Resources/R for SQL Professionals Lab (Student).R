@@ -46,6 +46,30 @@
 
 		### Using the anscombe sample dataset, view the data and then edit it in a graphical window:
 
+		## Programming and Flow
+		x <- 1
+		if (x > 1) "Higher than 1" else "Not higher than 1"
+
+		0xFFFF
+
+		### loop types
+		i <- 5
+		repeat { if (i > 25) break else { print(i); i <- i + 5; }}
+
+		i <- 5
+		while (i <= 25) { print(i); i <- i + 5; }
+
+		for (i in seq(from = 5, to = 25, by = 5))
+			print(i)
+
+		install.packages("iterators")
+		library(iterators)
+		help.search("iterators")
+
+		i <- iter(1:5)
+		nextElem(i)
+
+
 		### Clean up - use with care!
 
 	#1.4 Package Management
@@ -56,9 +80,9 @@
 		### Show how to get help with one of them:
 
 		### Show where R stores packages:
-		
+
 		### Install the dplyr package:
-		
+
 		### Update all packages:
 
 		## More info on packages for MRS: https: / / msdn.microsoft.com / en - us / library / mt591989.aspx
@@ -145,6 +169,18 @@
 		df <- data.frame(x, y, z)
 		df
 
+		## Dates - and the lubridate package
+		startDate <- as.Date("2017-12-25")
+		endDate <- as.Date("2018-12-25")
+		elapsedDays <- endDate - startDate
+		elapsedDays
+
+		### Get the difference in dates in weeks
+
+
+		install.packages("lubridate")
+		vignette("lubridate")
+
 #3.0 Data Ingress and Connection Options
 	#3.1 Scripts
 		## Load an R Script:
@@ -157,7 +193,7 @@
 
 		### Read the file "		data <- read.csv("https://aql.datapress.com/leeds/dataset/polling-station-locations/2016-03-17T10:33:18/Polling%20stations.csv")" and load it into an object called webdata
 		data <- read.csv("https://aql.datapress.com/leeds/dataset/polling-station-locations/2016-03-17T10:33:18/Polling%20stations.csv")
-		
+
 	#3.3 Exporting Data
 		## Send all output to file
 		sink("c:\\temp\\output.txt")
@@ -295,7 +331,7 @@
 
 #5.0 Visualization - check out http://www.joyce-robbins.com/wp-content/uploads/2016/04/effectivegraphsmro1.pdf
 	## packages: base, ggplot2, lattice, HH, MASS and micromapST
-	
+
 	#5.1 Plot
 	## Example for cars dataset
 	require(stats) # for lowess, rpois, rnorm
@@ -334,9 +370,9 @@
 
 #### 6: Optional full examples
 
-# An interesting experience, which puts your knowledge together - 
+# An interesting experience, which puts your knowledge together -
 # Wordcloud in R
-# https://cran.r-project.org/web/packages/wordcloud/wordcloud.pdf 
+# https://cran.r-project.org/web/packages/wordcloud/wordcloud.pdf
 install.packages("tm")
 install.packages("wordcloud")
 install.packages("SnowballC")

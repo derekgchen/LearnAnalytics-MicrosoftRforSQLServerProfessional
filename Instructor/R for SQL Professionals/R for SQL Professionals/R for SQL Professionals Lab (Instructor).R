@@ -5,6 +5,14 @@
 ## Note - R Allows you to work with Statistics, which this course does not cover. You should be familiar with the following terms:
 ## Finite and infinite probability, Joint/addition/multiplication/conditional probability operations, Combination and permutation, the seven fundamental rules of probability theory, Random sampling, Over - fitting, Sampling with and without replacement, Histograms and ogives, Cumulative percentages, Population distribution, Stem and leaf graphs, S - shaped curve, Data distribution(middle value measurements and range), Central tendency and dispersion(variance), Tchebysheff Inequality Theorem, Central Limit Theorem, Binomial distributions, Normal distribution,  Chi - squared, t and F distributions, Hypothesis testing, Confidence intervals, Standard error, Type I and II errors, Correlation, Regression, Significance testing, Cross validation, jackknife and bootstrap replication of study
 
+# Student Start - Have the Students run this, even before they get started
+# to show what R can do:
+data(cars)
+dim(cars)
+names(cars)
+summary(cars)
+plot(cars, xlab = "Speed (mph)", ylab = "Topping distance (ft)", las = 1, xlim = c(0, 25))
+
 #1.0 Planning, setup and environment
 	##1.1 R Ecostructure, Installation
 	##1.2 Microsoft R
@@ -13,7 +21,10 @@
 		help.start()
 		### Show one example of the help function. Is there more than one way to do that?
 		help(solve)
-		? solve
+		? vignette
+		help.search("solve")
+		example("solve")
+		vignette("grid")
 
 		### Show the R version:
 		sessionInfo()
@@ -57,6 +68,29 @@
 		View(anscombe)
 		fix(anscombe)
 
+		## Programming and Flow
+		x <- 1
+		if (x > 1) "Higher than 1" else "Not higher than 1"
+
+		0xFFFF
+
+		### loop types
+		i <- 5
+		repeat { if (i > 25) break else { print(i); i <- i + 5; }}
+
+		i <- 5
+		while (i <= 25) { print(i); i <- i + 5; }
+
+		for (i in seq(from = 5, to = 25, by = 5))
+			print(i)
+
+		install.packages("iterators")
+		library(iterators)
+		help.search("iterators")
+
+		i <- iter(1:5)
+		nextElem(i)
+
 		### Clean up - use with care!
 		rm(list = ls())
 
@@ -84,8 +118,8 @@
 	##2.1 R Data Types
 	##2.2 R Data Structures
 	### Create an object holding a range of values from 1 to 20. Create another object showing whether all values are higher than 15. Show the type of the two objects:
-	x <- 1:10
-	y <- x > 5
+	x <- 1:20
+	y <- x > 15
 	class(y)
 	str(y)
 
@@ -187,8 +221,6 @@
 		sums
 		sums <- apply(x, 2, sum) # sum the columns down
 		sums
-		### Clean up - use with care!
-		rm(list = ls())
 
 		## Dataframes
 		## Data frames are similar to a Matrix, but different "columns" can have different datatypes.
@@ -197,6 +229,21 @@
 		z <- c(TRUE, FALSE, TRUE)
 		df <- data.frame(x, y, z)
 		df
+
+		## Dates - and the lubridate package
+		startDate <- as.Date("2017-12-25")
+		endDate <- as.Date("2018-12-25")
+		elapsedDays <- endDate - startDate
+		elapsedDays
+
+		### Get the difference in dates in weeks
+		difftime(endDate, startDate, units = 'weeks')
+
+		install.packages("lubridate")
+		vignette("lubridate")
+
+		### Clean up - use with care!
+		rm(list = ls())
 
 #3.0 Data Ingress and Connection Options
 	#3.1 Scripts
@@ -242,6 +289,7 @@
 	rm(list = ls())
 
 #4.0 R Functions
+
 	## 4.1 Basic Functions:
 	x <- cars
 	str(x)
@@ -324,7 +372,7 @@
 	mutate() # Like the SQL ALIAS Statement
 	distinct() # Like the SQL DISTINCT Statement
 	do() # Like SQL Cursors
-	
+
 	#4.4 Probability Analysis
 	### Look up the help for at least three of the functions below, locate an example, type and run it here:
 	help(qnorm)
@@ -369,7 +417,7 @@
 
 #5.0 Visualization - check out http://www.joyce-robbins.com/wp-content/uploads/2016/04/effectivegraphsmro1.pdf
 	## packages: base, ggplot2, lattice, HH, MASS and micromapST
-	
+
 	#5.1 Plot
 	## Example for cars dataset
 	require(stats) # for lowess, rpois, rnorm
@@ -414,9 +462,9 @@
 
 #### Optional full examples
 
-# An interesting experience, which puts your knowledge together - 
+# An interesting experience, which puts your knowledge together -
 # Wordcloud in R
-# https://cran.r-project.org/web/packages/wordcloud/wordcloud.pdf 
+# https://cran.r-project.org/web/packages/wordcloud/wordcloud.pdf
 install.packages("tm")
 install.packages("wordcloud")
 install.packages("SnowballC")
