@@ -1,6 +1,6 @@
 ﻿## R for SQL Professionals Lab (Student).R
 ## Buck Woody, Microsoft
-## Last Updated: 28 May 2017
+## Last Updated: 25 July 2017
 ## Based on the CRAN Course located here:https://cran.r-project.org/doc/manuals/r-release/R-intro.html
 ## You will read through the material below along with the course "R for SQL Professionals"
 ## Anything using one # or two ## signs is for you to read and follow along, anything with ### is your assignment when you get to that portion of the class.
@@ -260,6 +260,7 @@
 	prop.table(price, 2) # proportion of columns
 
 	### A far more common tool for qualitative selection and "wrangling" of data is dplyr. Install it:
+	install.packages("dplyr")
 	library(dplyr)
 	# Documentation: https://www.r-project.org/nosvn/pandoc/dplyr.html
 

@@ -1,6 +1,6 @@
 ## R for SQL Professionals Lab (Instructor).R
 ## Buck Woody, Microsoft
-## Last Updated: 10 June 2017
+## Last Updated: 25 July 2017
 ## Based on the CRAN Course located here:https://cran.r-project.org/doc/manuals/r-release/R-intro.html
 ## Note - R Allows you to work with Statistics, which this course does not cover. You should be familiar with the following terms:
 ## Finite and infinite probability, Joint/addition/multiplication/conditional probability operations, Combination and permutation, the seven fundamental rules of probability theory, Random sampling, Over - fitting, Sampling with and without replacement, Histograms and ogives, Cumulative percentages, Population distribution, Stem and leaf graphs, S - shaped curve, Data distribution(middle value measurements and range), Central tendency and dispersion(variance), Tchebysheff Inequality Theorem, Central Limit Theorem, Binomial distributions, Normal distribution,  Chi - squared, t and F distributions, Hypothesis testing, Confidence intervals, Standard error, Type I and II errors, Correlation, Regression, Significance testing, Cross validation, jackknife and bootstrap replication of study
@@ -338,6 +338,7 @@ plot(cars, xlab = "Speed (mph)", ylab = "Topping distance (ft)", las = 1, xlim =
 	prop.table(price, 2) # proportion of columns
 
 	### A far more common tool for qualitative selection and "wrangling" of data is dplyr. Use it:
+	install.packages("dplyr")
 	library(dplyr)
 	# Documentation: https://www.r-project.org/nosvn/pandoc/dplyr.html
 
